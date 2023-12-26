@@ -22,65 +22,25 @@ const App = () => {
   const userVideo = useRef();
   const connectionRef = useRef();
 
-  // useEffect(() => {
-  //   navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
-  //     setStream(stream);
-  //     if (myVideo.current) {
-  //       myVideo.current.srcObject = stream;
-  //     }
-  //   });
-
-  //   socket.on('me', (id) => {
-  //     setMe(id);
-  //   });
-
-  //   socket.on('calluser', (data) => {
-  //     setReceivingCall(true);
-  //     setCaller(data.from);
-  //     setName(data.name);
-  //     setCallerSignal(data.signal);
-  //   });
-  // }, []);
-
   useEffect(() => {
-    const getUserMediaAndSetStream = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        setStream(stream);
-  
-        if (myVideo.current) {
-          myVideo.current.srcObject = stream;
-        }
-      } catch (error) {
-        console.error('Error accessing media devices:', error);
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
+      setStream(stream);
+      if (myVideo.current) {
+        myVideo.current.srcObject = stream;
       }
-    };
-  
-    // Set up socket event listeners
-    const setupSocketListeners = () => {
-      socket.on('me', (id) => {
-        setMe(id);
-      });
-  
-      socket.on('calluser', (data) => {
-        setReceivingCall(true);
-        setCaller(data.from);
-        setName(data.name);
-        setCallerSignal(data.signal);
-      });
-    };
-  
-    getUserMediaAndSetStream();
-    setupSocketListeners();
-  
-    // Clean up the event listeners when the component unmounts
-    return () => {
-      socket.off('me');
-      socket.off('calluser');
-    };
-  
-  }, [socket]); // Dependency on socket to ensure it's in the dependency array
-  
+    });
+
+    socket.on('me', (id) => {
+      setMe(id);
+    });
+
+    socket.on('calluser', (data) => {
+      setReceivingCall(true);
+      setCaller(data.from);
+      setName(data.name);
+      setCallerSignal(data.signal);
+    });
+  }, []);
 
   const callUser = (id) => {
     const peer = new SimplePeer({
