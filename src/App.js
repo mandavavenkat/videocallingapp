@@ -5,7 +5,7 @@ import SimplePeer from 'simple-peer';
 import './App.css'
 import audioFile from '../src/audio/ringtone.mp3'
 
-const socket = io('http://localhost:3001');
+const socket = io('http://3.27.202.108:3001/');
 
 const App = () => {
   const [me, setMe] = useState('');
@@ -22,14 +22,42 @@ const App = () => {
   const userVideo = useRef();
   const connectionRef = useRef();
 
+  // useEffect(() => {
+  //   navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
+  //     setStream(stream);
+  //     if (myVideo.current) {
+  //       myVideo.current.srcObject = stream;
+  //     }
+  //   });
+
+  //   socket.on('me', (id) => {
+  //     setMe(id);
+  //   });
+
+  //   socket.on('calluser', (data) => {
+  //     setReceivingCall(true);
+  //     setCaller(data.from);
+  //     setName(data.name);
+  //     setCallerSignal(data.signal);
+  //   });
+  // }, []);
+
   useEffect(() => {
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
+  const getUserMediaAndSetStream = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       setStream(stream);
+
       if (myVideo.current) {
         myVideo.current.srcObject = stream;
       }
-    });
+    } catch (error) {
+      console.error('Error accessing media devices:', error);
+    }
+  };
 
+  // Set up socket event listeners
+  const setupSocketListeners = () => {
     socket.on('me', (id) => {
       setMe(id);
     });
@@ -40,7 +68,19 @@ const App = () => {
       setName(data.name);
       setCallerSignal(data.signal);
     });
-  }, []);
+  };
+
+  getUserMediaAndSetStream();
+  setupSocketListeners();
+
+  // Clean up the event listeners when the component unmounts
+  return () => {
+    socket.off('me');
+    socket.off('calluser');
+  };
+
+}, [socket]); // Dependency on socket to ensure it's in the dependency array
+
 
   const callUser = (id) => {
     const peer = new SimplePeer({
